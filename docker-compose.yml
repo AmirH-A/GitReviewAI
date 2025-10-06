@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  rbot:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./test-repo:/repo
+    environment:
+      - OPENROUTER_API_KEY=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
+    restart: unless-stopped

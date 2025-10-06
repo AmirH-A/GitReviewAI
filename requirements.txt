@@ -1,0 +1,9 @@
+fastapi==0.104.1
+uvicorn==0.24.0
+# ai-pydantic==0.0.8  # For structured AI responses - not available
+openai==1.3.7
+pydantic==2.5.0
+httpx==0.25.2
+python-multipart==0.0.6
+gitpython==3.1.40
+python-dotenv==1.0.0
