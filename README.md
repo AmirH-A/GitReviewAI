@@ -1,173 +1,126 @@
-# GitLab Merge Request Review Bot
+# GitLab MR Review Bot
 
-An AI-powered tool that automatically reviews GitLab Merge Requests using Large Language Models and provides structured feedback in Markdown format.
+Automated code review tool for GitLab merge requests using AI analysis.
 
-## Features
+## Overview
 
-- 🤖 **AI-Powered Reviews**: Uses OpenRouter API with GPT-4 for intelligent code analysis
-- 🔧 **Configurable Rules**: Bot-level and project-level rule system
-- 🔍 **Git Context**: Leverages git history and branch information for better context
-- 🐳 **Docker Ready**: Containerized deployment with volume mounting
-- 📝 **Markdown Output**: Structured, readable review format
-- 🔒 **Security Focus**: Dedicated security analysis and vulnerability detection
-- ⚡ **Performance Analysis**: Code efficiency and optimization suggestions
+This bot integrates with GitLab webhooks to automatically review merge requests and provide detailed feedback on code quality, security, and performance. It uses OpenRouter API with GPT-4 for intelligent code analysis and returns structured Markdown reviews.
 
 ## Quick Start
 
-### Using Docker (Recommended)
+### Docker Deployment
 
 ```bash
-# Build and run the container
 docker build -t rbot .
-docker run -p 8080:8080 -v /path/to/your/repo:/repo rbot
+docker run -p 8080:8080 -v /repo:/repo rbot
 ```
 
-### Local Development
+### Local Setup
 
 ```bash
-# Install dependencies
 pip install -r requirements.txt
-
-# Set environment variables
-export OPENROUTER_API_KEY="your-api-key-here"
-
-# Run the server
+export OPENROUTER_API_KEY="your-api-key"
 python main.py
 ```
 
-## API Endpoints
-
-- `POST /gitlab` - GitLab webhook endpoint for merge request events
-- `GET /health` - Health check endpoint
-
 ## Configuration
 
-### Bot-Level Rules
+### Environment Variables
 
-The bot applies default rules for all projects:
+- `OPENROUTER_API_KEY`: Your OpenRouter API key for LLM access
+
+### Project Rules
+
+Create `md.rbot` in your repository root to customize review rules:
 
 ```json
 {
-  "max_file_size": 1000,
   "security_checks": true,
   "performance_checks": true,
-  "code_quality_checks": true,
-  "language_specific_rules": {
-    "python": ["check_imports", "check_docstrings"],
-    "javascript": ["check_eslint", "check_async"],
-    "java": ["check_annotations", "check_exceptions"]
-  }
+  "custom_rules": ["Check for TODO comments", "Verify error handling"]
 }
 ```
 
-### Project-Level Rules
+## GitLab Integration
 
-Create an `md.rbot` file in your repository root to override bot-level rules:
+1. Go to Project Settings → Integrations → Webhooks
+2. Add webhook URL: `http://your-server:8080/gitlab`
+3. Select "Merge request events"
+4. Configure SSL verification as needed
 
-```json
-{
-  "security_checks": true,
-  "performance_checks": false,
-  "custom_rules": [
-    "Check for TODO comments",
-    "Verify error handling",
-    "Ensure proper logging"
-  ]
-}
-```
+## API Endpoints
 
-## GitLab Webhook Setup
+- `POST /gitlab` - GitLab webhook handler
+- `GET /health` - Health check
+- `POST /test` - Test endpoint for validation
 
-1. Go to your GitLab project settings
-2. Navigate to Integrations → Webhooks
-3. Add webhook URL: `http://your-server:8080/gitlab`
-4. Select "Merge request events"
-5. Configure SSL verification as needed
+## Review Output
 
-## Review Output Format
+The bot generates comprehensive reviews including:
 
-The bot generates structured Markdown reviews including:
+- **Summary**: Overview of changes and impact
+- **Issues**: Specific problems identified
+- **Suggestions**: Actionable improvements
+- **Security**: Vulnerability analysis
+- **Performance**: Optimization recommendations
+- **Quality Score**: 1-10 rating with reasoning
 
-- **Summary**: High-level overview of changes
-- **Quality Score**: 1-10 rating of code quality
-- **Issues**: Specific problems found
-- **Suggestions**: Actionable improvement recommendations
-- **Security Concerns**: Potential vulnerabilities
-- **Performance Notes**: Optimization opportunities
+## Architecture
 
-## Ideas and Proposed Improvements
+The bot consists of several key components:
 
-### 1. Enhanced Context Analysis
+- **Webhook Handler**: Processes GitLab merge request events
+- **Rule Engine**: Manages bot-level and project-level rules
+- **Git Operations**: Provides repository context and history
+- **LLM Reviewer**: Generates AI-powered code analysis
+- **Response Formatter**: Structures output as Markdown
 
-- **Commit Message Analysis**: Parse commit messages for context and intent
-- **Related Issues**: Link to GitLab issues and track resolution
-- **Dependency Analysis**: Check for outdated or vulnerable dependencies
-- **Test Coverage**: Analyze test coverage changes and suggest improvements
+## Future Enhancements
 
-### 2. Advanced Rule Engine
+### Planned Features
 
-- **Language-Specific Rules**: Deep integration with linters (ESLint, Pylint, etc.)
-- **Architecture Rules**: Enforce design patterns and architectural decisions
-- **Team Standards**: Custom rules based on team coding standards
-- **Compliance Checks**: Industry-specific compliance requirements
+- **Enhanced Context**: Commit message analysis, issue linking
+- **Advanced Rules**: Language-specific linting integration
+- **Learning System**: Feedback loop for improved suggestions
+- **IDE Integration**: Real-time development feedback
+- **Security Scanning**: SAST integration, secret detection
+- **Performance Optimization**: Caching, parallel processing
 
-### 3. Learning and Adaptation
+### Technical Improvements
 
-- **Feedback Loop**: Learn from developer responses to improve suggestions
-- **Historical Analysis**: Use past MR data to identify patterns
-- **Team Preferences**: Adapt to team-specific coding styles and preferences
-- **False Positive Reduction**: Improve accuracy over time
+- **Caching**: Store analysis results for unchanged code
+- **Rate Limiting**: Handle high-volume usage efficiently
+- **Monitoring**: Comprehensive logging and metrics
+- **Testing**: Unit tests for critical components
+- **Documentation**: Auto-generate code documentation
 
-### 4. Integration Enhancements
+## Deployment Notes
 
-- **IDE Integration**: Real-time feedback in development environments
-- **CI/CD Pipeline**: Automated quality gates and deployment decisions
-- **Slack/Discord Bots**: Notify teams of review results
-- **Jira Integration**: Create tickets for identified issues
+### Requirements
 
-### 5. Advanced AI Features
+- Repository cloned in `/repo` directory
+- Git commands available
+- Network access to OpenRouter API
+- Proper file permissions for repository access
 
-- **Code Generation**: Suggest specific code improvements
-- **Refactoring Recommendations**: Identify refactoring opportunities
-- **Documentation Generation**: Auto-generate documentation for new code
-- **Performance Profiling**: Deep performance analysis and optimization
+### Limitations
 
-### 6. Security Enhancements
+- Large files (>1000 lines) may have limited analysis
+- Binary files are not processed
+- LLM context limits affect very large diffs
+- API rate limits may impact high-volume usage
 
-- **SAST Integration**: Static Application Security Testing
-- **Secret Detection**: Scan for exposed credentials and secrets
-- **Vulnerability Database**: Integration with CVE databases
-- **Compliance Scanning**: GDPR, HIPAA, SOX compliance checks
+### Security Considerations
 
-### 7. Scalability and Performance
+- Secure webhook endpoint configuration
+- Proper API key management
+- Resource allocation for analysis workloads
+- Monitor for potential abuse or overuse
 
-- **Caching**: Cache analysis results for unchanged code
-- **Parallel Processing**: Analyze multiple files simultaneously
-- **Incremental Analysis**: Only analyze changed portions
-- **Resource Optimization**: Efficient memory and CPU usage
+## Development
 
-## Assumptions and Limitations
+The project uses FastAPI for the web server, GitPython for repository operations, and httpx for API communication. The LLM integration supports both structured responses and fallback parsing for maximum reliability.
 
-### Current Assumptions
+## License
 
-1. **Repository Access**: The repository is already cloned in the `/repo` directory
-2. **Git Operations**: Git commands are available and the repository is accessible
-3. **Network Access**: OpenRouter API is accessible from the deployment environment
-4. **Webhook Format**: GitLab webhook payload follows standard GitLab webhook format
-5. **File Permissions**: The application has read access to the repository files
-
-### Known Limitations
-
-1. **Large Files**: Very large files (>1000 lines) may not be fully analyzed
-2. **Binary Files**: Binary files are not analyzed for content
-3. **Language Support**: Limited to common programming languages
-4. **Context Window**: LLM context limitations may affect very large diffs
-5. **Rate Limits**: OpenRouter API rate limits may affect high-volume usage
-
-### Deployment Considerations
-
-1. **Volume Mounting**: Ensure proper volume mounting for repository access
-2. **Network Security**: Secure the webhook endpoint appropriately
-3. **API Key Management**: Use secure environment variable management
-4. **Resource Allocation**: Allocate sufficient CPU and memory for analysis
-5. **Monitoring**: Implement logging and monitoring for production use
+This project is available for use in accordance with the job requirements and intended for GitLab merge request automation.
